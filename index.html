@@ -1,0 +1,215 @@
+﻿<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OnlineMarket</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      direction: rtl;
+      text-align: right;
+      font-family: 'Poppins', sans-serif;
+      margin: 20px 0;
+    }
+
+    header {
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      margin: 20px 0 40px 0;
+    }
+
+    #form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .form-group {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    label {
+      flex-basis: 30%;
+      font-size: 16px;
+      font-weight: 600;
+      margin-right: 10px;
+    }
+
+    input {
+      flex-basis: 70%;
+      padding: 10px;
+      border: none;
+      border-bottom: 2px solid #B0B0B0;
+      font-size: 16px;
+      outline: none;
+    }
+
+    #national-error {
+      position: absolute;
+      bottom: -20px;
+      left: 0;
+      color: red;
+      font-size: 14px;
+      display: none;
+    }
+
+    .submit {
+      background-color: #ff0000;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100px;
+      font-size: 17px;
+    }
+
+    table {
+      display: none;
+      width: 100%;
+      margin: 20px 0;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <header>الإستعلام عن كلمة السر للطلاب واولياء الامور</header>
+
+  <form id="form" onsubmit="return handleSubmit();">
+    <div class="form-group">
+      <label>ادخل الرقم القومى للطالب :</label>
+      <input name="national" id="national" type="text" placeholder="30207011327174" onkeyup="validateNational();" />
+      <span id="national-error">يرجى التأكد من الرقم القومى</span>
+    </div>
+    <button type="submit" class="submit">بحث</button>
+  </form>
+
+  <section id="result">
+    <table id="result-table">
+      <tr>
+        <th>اسم الطالب</th>
+        <td id="student-name"></td>
+        <th>الرقم القومى</th>
+        <td id="student-national"></td>
+      </tr>
+      <tr>
+        <th>المرحلة</th>
+        <td id="stage"></td>
+        <th>الصف</th>
+        <td id="class"></td>
+      </tr>
+      <tr>
+        <th>اسم المستخدم</th>
+        <td colspan="3" id="student-username"></td>
+      </tr>
+      <tr>
+        <th>كلمه مرور</th>
+        <td colspan="3" id="student-password"></td>
+      </tr>
+      <tr>
+        <th colspan="4">---</th>
+      </tr>
+      <tr>
+        <th>اسم ولى الامر</th>
+        <td id="parent-name"></td>
+        <th>الرقم القومى</th>
+        <td id="parent-national"></td>
+      </tr>
+      <tr>
+        <th>اسم المستخدم</th>
+        <td colspan="3" id="parent-username"></td>
+      </tr>
+      <tr>
+        <th>كلمه مرور</th>
+        <td colspan="3" id="parent-password"></td>
+      </tr>
+    </table>
+    <p id="loading-message" style="display: none;">يتم التحميل...</p>
+    <p id="error-message" style="display: none;">لم يتم العثور على بيانات.</p>
+  </section>
+
+  <script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxrgvk6N4_Zm1BjqMiL7OnYwKfTV6zrXBfUYEm7bIMvTIC3_I2_cKJWWfiFfXsKSg8/exec';
+
+    function validateNational() {
+      const national = document.getElementById("national").value;
+      const nationalError = document.getElementById("national-error");
+      const validNational = /^\d{14}$/;
+
+      if (!validNational.test(national)) {
+        nationalError.style.display = "block";
+      } else {
+        nationalError.style.display = "none";
+      }
+    }
+
+    function handleSubmit() {
+      const nationalError = document.getElementById("national-error");
+      const national = document.getElementById("national").value;
+
+      if (nationalError.style.display === "block" || national === "") {
+        nationalError.style.display = "block";
+        return false;
+      }
+
+      // Show loading message
+      document.getElementById('loading-message').style.display = 'block';
+
+      fetch(scriptURL, {
+        method: 'POST',
+        body: new FormData(document.getElementById("form"))
+      })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('loading-message').style.display = 'none'; // Hide loading message
+
+          if (Object.keys(data).length > 0) {
+            populateTable(data);
+            document.getElementById("result-table").style.display = "table";
+          } else {
+            document.getElementById("result-table").style.display = "none"; // Hide table
+            document.getElementById("error-message").style.display = "block"; // Show error message
+          }
+        })
+        .catch(error => {
+          document.getElementById('loading-message').style.display = 'none'; // Hide loading message
+          console.error('Error!', error.message);
+        });
+
+      return false;
+    }
+
+    function populateTable(data) {      
+      document.getElementById("student-name").textContent = data["اسم الطالب"] || '';
+      document.getElementById("student-national").textContent = data["رقم القومي للطالب"] || ''; 
+      document.getElementById("stage").textContent = data["المرحلة"] || ''; 
+      document.getElementById("class").textContent = data["الصف"] || ''; 
+      document.getElementById("student-username").textContent = data["اسم المستخدم للطالب"] || '';
+      document.getElementById("student-password").textContent = data["كلمة المرور للطالب"] || '';
+      document.getElementById("parent-name").textContent = data["اسم ولي الامر"] || '';
+      document.getElementById("parent-national").textContent = data["رقم القومي لولي الامر"] || '';
+      document.getElementById("parent-username").textContent = data["اسم المستخدم لولي الامر"] || '';
+      document.getElementById("parent-password").textContent = data["كلمة المرور لولي الامر"] || '';
+    }
+
+  </script>
+</body>
+
+</html>
