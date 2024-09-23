@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OnlineMarket</title>
+  <title>الإستعلام عن كلمة السر</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -13,6 +13,8 @@
       text-align: right;
       font-family: 'Poppins', sans-serif;
       margin: 20px 0;
+      background-color: white;
+      padding: 10px;
     }
 
     header {
@@ -95,7 +97,7 @@
   <form id="form" onsubmit="return handleSubmit();">
     <div class="form-group">
       <label>ادخل الرقم القومى للطالب :</label>
-      <input name="national" id="national" type="text" placeholder="30207011327174" onkeyup="validateNational();" />
+      <input name="national" id="national" type="text" placeholder="" onkeyup="validateNational();" />
       <span id="national-error">يرجى التأكد من الرقم القومى</span>
     </div>
     <button type="submit" class="submit">بحث</button>
@@ -169,7 +171,6 @@
         return false;
       }
 
-      // Show loading message
       document.getElementById('loading-message').style.display = 'block';
 
       fetch(scriptURL, {
@@ -178,19 +179,21 @@
       })
         .then(response => response.json())
         .then(data => {
-          document.getElementById('loading-message').style.display = 'none'; // Hide loading message
+          document.getElementById('loading-message').style.display = 'none';
 
           if (Object.keys(data).length > 0) {
             populateTable(data);
             document.getElementById("result-table").style.display = "table";
+            document.getElementById("error-message").style.display = "none";
           } else {
-            document.getElementById("result-table").style.display = "none"; // Hide table
-            document.getElementById("error-message").style.display = "block"; // Show error message
+            document.getElementById("result-table").style.display = "none";
+            document.getElementById("error-message").style.display = "block";
           }
         })
         .catch(error => {
-          document.getElementById('loading-message').style.display = 'none'; // Hide loading message
-          console.error('Error!', error.message);
+          document.getElementById('loading-message').style.display = 'none';
+          document.getElementById("result-table").style.display = "none";
+          document.getElementById("error-message").style.display = "block";
         });
 
       return false;
@@ -211,5 +214,4 @@
 
   </script>
 </body>
-
 </html>
